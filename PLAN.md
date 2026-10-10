@@ -223,7 +223,7 @@ B 파일에 일시 장애 주입 → A·C 성공 / B 재시도 확인
 
 ## 7. 예정 코드와 리뷰 순서
 
-v1 구현 경로는 [실행·코드 안내](docs/v1.md)를 따른다. 아래 표는 전체 목표 구조이며, `sources/`·`validation.py`·`privacy.py`는 현재 `transform.py`, `ingest.py`·`verification.py`는 `pipeline.py`, 저장소 코드는 `database.py`·`files.py`에 함께 구현했다. 별도 정합성 DAG·benchmark 스크립트는 v3 계획이다.
+v1 구현 경로는 [실행·코드 안내](docs/usage.md)를 따른다. 아래 표는 전체 목표 구조이며, `sources/`·`validation.py`·`privacy.py`는 현재 `transform.py`, `ingest.py`·`verification.py`는 `pipeline.py`, 저장소 코드는 `database.py`·`files.py`에 함께 구현했다. 별도 정합성 DAG·benchmark 스크립트는 v3 계획이다.
 
 | 순서 | 예정 경로 | 역할 |
 | --- | --- | --- |

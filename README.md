@@ -6,7 +6,7 @@
 
 **현재: v1 구현.** 파일별 병렬 적재와 결과 검증을 실행할 수 있습니다. 장애 주입·선택적 태스크 복구 데모는 v2, 공정한 성능 비교와 별도 정합성 검사 DAG는 v3 범위입니다.
 
-[구현 계획](PLAN.md) · [실행·코드 안내](docs/v1.md) · [v1 검증 기록](evaluation/v1-smoke.json)
+[구현 계획](PLAN.md) · [v1 구현 기록](docs/v1.md) · [실행 안내](docs/usage.md) · [v1 검증 기록](evaluation/v1-smoke.json)
 
 ## 실행 흐름
 
