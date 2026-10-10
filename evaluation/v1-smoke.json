@@ -1,0 +1,775 @@
+{
+  "scope": "v1 functional verification; not a performance benchmark",
+  "environment": {
+    "airflow": "2.11.0",
+    "python": "3.12",
+    "postgres": "16.9",
+    "executor": "LocalExecutor",
+    "architecture": "aarch64",
+    "docker_cpus": 12,
+    "docker_memory_bytes": 8217292800
+  },
+  "dataset": {
+    "name": "demo",
+    "files": 8,
+    "orders_per_file": 5000,
+    "unique_orders": 40000
+  },
+  "execution_order": [
+    4,
+    1,
+    2
+  ],
+  "limitations": [
+    "One functional run per pool setting, not a repeated benchmark.",
+    "Slot 4 run inserts orders; slot 1 and 2 runs reprocess existing orders.",
+    "Fault injection and selected task recovery demo are planned for v2.",
+    "Single-machine process concurrency; not a multi-node deployment."
+  ],
+  "tests": {
+    "container_passed": 36,
+    "container_skipped": 0,
+    "host_passed": 27,
+    "host_skipped": 9
+  },
+  "runs": [
+    {
+      "kind": "v1_functional_smoke_not_benchmark",
+      "slots": 4,
+      "run_id": "v1_slots_4_7d3302225bc1",
+      "dataset": "demo",
+      "state": "success",
+      "start_date": "2026-10-10T01:51:29.098748+00:00",
+      "end_date": "2026-10-10T01:51:33.228042+00:00",
+      "mapped_tasks": 8,
+      "peak_task_overlap": 4,
+      "peak_processing_overlap": 4,
+      "tasks": [
+        {
+          "task_id": "discover_batches",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:29.332809+00:00",
+          "end_date": "2026-10-10T01:51:29.440334+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "finalize_run",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:32.264471+00:00",
+          "end_date": "2026-10-10T01:51:33.184145+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 0,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:29.983413+00:00",
+          "end_date": "2026-10-10T01:51:30.625189+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:29.979460+00:00",
+          "end_date": "2026-10-10T01:51:30.621252+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 2,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:30.014929+00:00",
+          "end_date": "2026-10-10T01:51:30.614880+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 3,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:30.002391+00:00",
+          "end_date": "2026-10-10T01:51:30.610702+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 4,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:31.154684+00:00",
+          "end_date": "2026-10-10T01:51:31.623979+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 5,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:31.148914+00:00",
+          "end_date": "2026-10-10T01:51:31.623960+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 6,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:31.147863+00:00",
+          "end_date": "2026-10-10T01:51:31.624169+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 7,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:31.155043+00:00",
+          "end_date": "2026-10-10T01:51:31.624097+00:00",
+          "try_number": 1
+        }
+      ],
+      "verification": {
+        "amount_krw": 439980000,
+        "batches": [
+          {
+            "batch_id": "6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.425726,
+            "finished_at": "2026-10-10T01:51:30.609730+00:00",
+            "output_hash": "9e023005978c72db3bdedf2cffca1e398a698fea9caf6de75c89578c46c71af6",
+            "output_path": "normalized/6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d.jsonl",
+            "processing_seconds": 0.513497,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:30.094948+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.428377,
+            "finished_at": "2026-10-10T01:51:30.608310+00:00",
+            "output_hash": "4f8591e8357cb0b9467607a7d2466742dc62736f065dc2f8da0b980091ba8cf7",
+            "output_path": "normalized/9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028.jsonl",
+            "processing_seconds": 0.516552,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:30.090750+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.404643,
+            "finished_at": "2026-10-10T01:51:30.600732+00:00",
+            "output_hash": "6f7b419867ddc9f90a19317cda9e264a07582589f8e6c4f22204307bf3884d86",
+            "output_path": "normalized/e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600.jsonl",
+            "processing_seconds": 0.490307,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:30.109362+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.385809,
+            "finished_at": "2026-10-10T01:51:30.571525+00:00",
+            "output_hash": "52a4b6dbd494ce4d6518f352e03179722c9cfaab8ef90c5903e9e6d7f03b87ae",
+            "output_path": "normalized/10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1.jsonl",
+            "processing_seconds": 0.466728,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:30.103676+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.318773,
+            "finished_at": "2026-10-10T01:51:31.605412+00:00",
+            "output_hash": "7a843955993516f437b795d7c76ed6f5c55fe7e2f62896a0f946328ef07d1b9e",
+            "output_path": "normalized/7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258.jsonl",
+            "processing_seconds": 0.361072,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:31.243631+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.324364,
+            "finished_at": "2026-10-10T01:51:31.604495+00:00",
+            "output_hash": "f4e524d9928e4d644e9ce673a9636ba7d585efac123a7ff263a4b369c63c489c",
+            "output_path": "normalized/baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde.jsonl",
+            "processing_seconds": 0.367009,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:31.236428+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.330806,
+            "finished_at": "2026-10-10T01:51:31.611131+00:00",
+            "output_hash": "cd1b6d0e944f67f5f3299dc581d81e9d9b54eafbec02cd530522b1421191d99f",
+            "output_path": "normalized/248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9.jsonl",
+            "processing_seconds": 0.373646,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:31.236428+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 0,
+              "inserted": 5000,
+              "invalid": 0
+            },
+            "db_seconds": 0.325023,
+            "finished_at": "2026-10-10T01:51:31.611657+00:00",
+            "output_hash": "ee55cd5270bd874b6583456766cb7b46b00b0754013871120ecc0d5242349869",
+            "output_path": "normalized/64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d.jsonl",
+            "processing_seconds": 0.367319,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:31.243632+00:00",
+            "status": "success"
+          }
+        ],
+        "counts": {
+          "conflict": 0,
+          "duplicate": 0,
+          "inserted": 40000,
+          "invalid": 0
+        },
+        "errors": [],
+        "run_id": "v1_slots_4_7d3302225bc1",
+        "status": "success",
+        "unique_orders": 40000,
+        "verified_at": "2026-10-10T01:51:33.143128+00:00"
+      }
+    },
+    {
+      "kind": "v1_functional_smoke_not_benchmark",
+      "slots": 1,
+      "run_id": "v1_slots_1_8f27b8c8dae2",
+      "dataset": "demo",
+      "state": "success",
+      "start_date": "2026-10-10T01:51:49.227233+00:00",
+      "end_date": "2026-10-10T01:51:59.453343+00:00",
+      "mapped_tasks": 8,
+      "peak_task_overlap": 1,
+      "peak_processing_overlap": 1,
+      "tasks": [
+        {
+          "task_id": "discover_batches",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:49.359760+00:00",
+          "end_date": "2026-10-10T01:51:49.461982+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "finalize_run",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:58.483908+00:00",
+          "end_date": "2026-10-10T01:51:59.298584+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 0,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:50.035391+00:00",
+          "end_date": "2026-10-10T01:51:50.471884+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 1,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:51.244059+00:00",
+          "end_date": "2026-10-10T01:51:51.675126+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 2,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:52.315254+00:00",
+          "end_date": "2026-10-10T01:51:52.688544+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 3,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:53.394670+00:00",
+          "end_date": "2026-10-10T01:51:53.780859+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 4,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:54.485898+00:00",
+          "end_date": "2026-10-10T01:51:54.873234+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 5,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:55.241169+00:00",
+          "end_date": "2026-10-10T01:51:55.605187+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 6,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:56.350217+00:00",
+          "end_date": "2026-10-10T01:51:56.719718+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 7,
+          "state": "success",
+          "start_date": "2026-10-10T01:51:57.423637+00:00",
+          "end_date": "2026-10-10T01:51:57.796637+00:00",
+          "try_number": 1
+        }
+      ],
+      "verification": {
+        "amount_krw": 439980000,
+        "batches": [
+          {
+            "batch_id": "6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.271409,
+            "finished_at": "2026-10-10T01:51:50.455008+00:00",
+            "output_hash": "9e023005978c72db3bdedf2cffca1e398a698fea9caf6de75c89578c46c71af6",
+            "output_path": "normalized/6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d.jsonl",
+            "processing_seconds": 0.34162,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:50.112182+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.249552,
+            "finished_at": "2026-10-10T01:51:51.631996+00:00",
+            "output_hash": "4f8591e8357cb0b9467607a7d2466742dc62736f065dc2f8da0b980091ba8cf7",
+            "output_path": "normalized/9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028.jsonl",
+            "processing_seconds": 0.315087,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:51.316166+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.223226,
+            "finished_at": "2026-10-10T01:51:52.674092+00:00",
+            "output_hash": "6f7b419867ddc9f90a19317cda9e264a07582589f8e6c4f22204307bf3884d86",
+            "output_path": "normalized/e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600.jsonl",
+            "processing_seconds": 0.287676,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:52.385707+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.233703,
+            "finished_at": "2026-10-10T01:51:53.765433+00:00",
+            "output_hash": "52a4b6dbd494ce4d6518f352e03179722c9cfaab8ef90c5903e9e6d7f03b87ae",
+            "output_path": "normalized/10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1.jsonl",
+            "processing_seconds": 0.298275,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:53.466277+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.250448,
+            "finished_at": "2026-10-10T01:51:54.843415+00:00",
+            "output_hash": "7a843955993516f437b795d7c76ed6f5c55fe7e2f62896a0f946328ef07d1b9e",
+            "output_path": "normalized/7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258.jsonl",
+            "processing_seconds": 0.290766,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:54.551885+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.232199,
+            "finished_at": "2026-10-10T01:51:55.590726+00:00",
+            "output_hash": "f4e524d9928e4d644e9ce673a9636ba7d585efac123a7ff263a4b369c63c489c",
+            "output_path": "normalized/baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde.jsonl",
+            "processing_seconds": 0.274321,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:55.315637+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.221755,
+            "finished_at": "2026-10-10T01:51:56.688618+00:00",
+            "output_hash": "cd1b6d0e944f67f5f3299dc581d81e9d9b54eafbec02cd530522b1421191d99f",
+            "output_path": "normalized/248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9.jsonl",
+            "processing_seconds": 0.262551,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:56.425330+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.241902,
+            "finished_at": "2026-10-10T01:51:57.781837+00:00",
+            "output_hash": "ee55cd5270bd874b6583456766cb7b46b00b0754013871120ecc0d5242349869",
+            "output_path": "normalized/64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d.jsonl",
+            "processing_seconds": 0.287585,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:51:57.493376+00:00",
+            "status": "success"
+          }
+        ],
+        "counts": {
+          "conflict": 0,
+          "duplicate": 40000,
+          "inserted": 0,
+          "invalid": 0
+        },
+        "errors": [],
+        "run_id": "v1_slots_1_8f27b8c8dae2",
+        "status": "success",
+        "unique_orders": 40000,
+        "verified_at": "2026-10-10T01:51:59.274321+00:00"
+      }
+    },
+    {
+      "kind": "v1_functional_smoke_not_benchmark",
+      "slots": 2,
+      "run_id": "v1_slots_2_7914d7dbc882",
+      "dataset": "demo",
+      "state": "success",
+      "start_date": "2026-10-10T01:52:02.249289+00:00",
+      "end_date": "2026-10-10T01:52:08.472297+00:00",
+      "mapped_tasks": 8,
+      "peak_task_overlap": 2,
+      "peak_processing_overlap": 2,
+      "tasks": [
+        {
+          "task_id": "discover_batches",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:02.329214+00:00",
+          "end_date": "2026-10-10T01:52:02.433743+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "finalize_run",
+          "map_index": -1,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:07.506417+00:00",
+          "end_date": "2026-10-10T01:52:08.398138+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 0,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:03.436658+00:00",
+          "end_date": "2026-10-10T01:52:03.873145+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 1,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:03.436291+00:00",
+          "end_date": "2026-10-10T01:52:03.874056+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 2,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:04.485505+00:00",
+          "end_date": "2026-10-10T01:52:04.906132+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 3,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:04.487050+00:00",
+          "end_date": "2026-10-10T01:52:04.906133+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 4,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:05.345322+00:00",
+          "end_date": "2026-10-10T01:52:05.730227+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 5,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:05.344680+00:00",
+          "end_date": "2026-10-10T01:52:05.730226+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 6,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:06.427006+00:00",
+          "end_date": "2026-10-10T01:52:06.806935+00:00",
+          "try_number": 1
+        },
+        {
+          "task_id": "process_batch",
+          "map_index": 7,
+          "state": "success",
+          "start_date": "2026-10-10T01:52:06.428999+00:00",
+          "end_date": "2026-10-10T01:52:06.806936+00:00",
+          "try_number": 1
+        }
+      ],
+      "verification": {
+        "amount_krw": 439980000,
+        "batches": [
+          {
+            "batch_id": "6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.2727,
+            "finished_at": "2026-10-10T01:52:03.856009+00:00",
+            "output_hash": "9e023005978c72db3bdedf2cffca1e398a698fea9caf6de75c89578c46c71af6",
+            "output_path": "normalized/6c1c7d873bf94c06c8347804b84d05111b6deb86a590733f542ac882e919299d.jsonl",
+            "processing_seconds": 0.342458,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:03.512740+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.278893,
+            "finished_at": "2026-10-10T01:52:03.861720+00:00",
+            "output_hash": "4f8591e8357cb0b9467607a7d2466742dc62736f065dc2f8da0b980091ba8cf7",
+            "output_path": "normalized/9fe410d5d6f210d783a5c64035c7f8cd034ef1161a6e481a644225d46176a028.jsonl",
+            "processing_seconds": 0.348163,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:03.512746+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.2488,
+            "finished_at": "2026-10-10T01:52:04.876706+00:00",
+            "output_hash": "6f7b419867ddc9f90a19317cda9e264a07582589f8e6c4f22204307bf3884d86",
+            "output_path": "normalized/e1779f16fa88b827ec5af496bc67eb87a03a951beb221eeb0681b543679b8600.jsonl",
+            "processing_seconds": 0.315627,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:04.560356+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.248219,
+            "finished_at": "2026-10-10T01:52:04.876250+00:00",
+            "output_hash": "52a4b6dbd494ce4d6518f352e03179722c9cfaab8ef90c5903e9e6d7f03b87ae",
+            "output_path": "normalized/10251d057184103c23b7fcb7cb29b930559257f63d7e02557d7d721efb1694a1.jsonl",
+            "processing_seconds": 0.315178,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:04.560369+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.24068,
+            "finished_at": "2026-10-10T01:52:05.714495+00:00",
+            "output_hash": "7a843955993516f437b795d7c76ed6f5c55fe7e2f62896a0f946328ef07d1b9e",
+            "output_path": "normalized/7b24dbb8a63fded6db82263a397079437e4b570d873cbe868729784797c85258.jsonl",
+            "processing_seconds": 0.282419,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:05.431189+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.240305,
+            "finished_at": "2026-10-10T01:52:05.714254+00:00",
+            "output_hash": "f4e524d9928e4d644e9ce673a9636ba7d585efac123a7ff263a4b369c63c489c",
+            "output_path": "normalized/baa84579c965b8e65a8072eb6e35d41966d4ab8970bf958b6038284434ef0fde.jsonl",
+            "processing_seconds": 0.282177,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:05.431189+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.240604,
+            "finished_at": "2026-10-10T01:52:06.790942+00:00",
+            "output_hash": "cd1b6d0e944f67f5f3299dc581d81e9d9b54eafbec02cd530522b1421191d99f",
+            "output_path": "normalized/248a25d295c9d5786b3635e69c81038bdb70c1219f9b23f17c957c62831682e9.jsonl",
+            "processing_seconds": 0.287591,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:06.501729+00:00",
+            "status": "success"
+          },
+          {
+            "batch_id": "64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d",
+            "counts": {
+              "conflict": 0,
+              "duplicate": 5000,
+              "inserted": 0,
+              "invalid": 0
+            },
+            "db_seconds": 0.240991,
+            "finished_at": "2026-10-10T01:52:06.791332+00:00",
+            "output_hash": "ee55cd5270bd874b6583456766cb7b46b00b0754013871120ecc0d5242349869",
+            "output_path": "normalized/64a31c985d5f108ff4170b70d3e62a86c2e9b8f85aeac3d9caead882d1cead2d.jsonl",
+            "processing_seconds": 0.287983,
+            "rows": 5000,
+            "started_at": "2026-10-10T01:52:06.501642+00:00",
+            "status": "success"
+          }
+        ],
+        "counts": {
+          "conflict": 0,
+          "duplicate": 40000,
+          "inserted": 0,
+          "invalid": 0
+        },
+        "errors": [],
+        "run_id": "v1_slots_2_7914d7dbc882",
+        "status": "success",
+        "unique_orders": 40000,
+        "verified_at": "2026-10-10T01:52:08.332928+00:00"
+      }
+    }
+  ]
+}
