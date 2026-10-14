@@ -43,78 +43,80 @@ def overlap(intervals):
     return peak
 
 
-def main():
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--slots", type=int, choices=(1, 2, 4), default=4)
-    p.add_argument("--dataset", default="demo")
-    p.add_argument("--timeout", type=int, default=600)
-    p.add_argument("--output", type=Path)
-    args = p.parse_args()
-    cfg = config()
-    origin = "http://127.0.0.1:" + cfg.get("AIRFLOW_PORT", "8085")
-    credentials = (
-        cfg.get("AIRFLOW_ADMIN_USER", "admin") + ":" + cfg.get("AIRFLOW_ADMIN_PASSWORD", "admin")
-    )
-    auth = base64.b64encode(credentials.encode()).decode()
+class AirflowAPI:
+    def __init__(self):
+        cfg = config()
+        self.origin = "http://127.0.0.1:" + cfg.get("AIRFLOW_PORT", "8085")
+        credentials = (
+            cfg.get("AIRFLOW_ADMIN_USER", "admin")
+            + ":"
+            + cfg.get("AIRFLOW_ADMIN_PASSWORD", "admin")
+        )
+        self.auth = base64.b64encode(credentials.encode()).decode()
 
-    def api(path, method="GET", data=None):
+    def __call__(self, path, method="GET", data=None):
         req = urllib.request.Request(
-            origin + "/api/v1" + path,
+            self.origin + "/api/v1" + path,
             method=method,
-            headers={"Authorization": "Basic " + auth, "Content-Type": "application/json"},
+            headers={"Authorization": "Basic " + self.auth, "Content-Type": "application/json"},
             data=json.dumps(data).encode() if data is not None else None,
         )
         with urllib.request.urlopen(req, timeout=30) as response:
             return json.load(response)
 
-    # Avoid changing concurrency under an existing run.
-    for state in ("queued", "running"):
-        existing = api("/dags/orders_etl/dagRuns?state=" + state)
-        if existing["total_entries"]:
-            raise SystemExit("orders_etl already has a queued/running run; wait for it to finish")
-    api("/pools/orders_pool", "PATCH", {"name": "orders_pool", "slots": args.slots})
-    api("/dags/orders_etl", "PATCH", {"is_paused": False})
-    run_id = "v1_slots_" + str(args.slots) + "_" + uuid.uuid4().hex[:12]
-    api(
-        "/dags/orders_etl/dagRuns",
-        "POST",
-        {"dag_run_id": run_id, "conf": {"dataset": args.dataset}},
-    )
-    path = "/dags/orders_etl/dagRuns/" + urllib.parse.quote(run_id, safe="")
-    deadline = time.monotonic() + args.timeout
+    def ensure_idle(self):
+        for state in ("queued", "running"):
+            existing = self("/dags/orders_etl/dagRuns?state=" + state)
+            if existing["total_entries"]:
+                raise SystemExit("orders_etl has an active run; wait for it to finish")
+
+
+def run_path(run_id):
+    return "/dags/orders_etl/dagRuns/" + urllib.parse.quote(run_id, safe="")
+
+
+def wait_for_run(api, run_id, timeout):
+    deadline = time.monotonic() + timeout
     last_state = None
     while True:
-        run = api(path)
+        run = api(run_path(run_id))
         if run["state"] != last_state:
             print(f"{run_id}: {run['state']}", flush=True)
             last_state = run["state"]
         if run["state"] in ("success", "failed"):
-            break
+            return run
         if time.monotonic() >= deadline:
-            raise SystemExit("Timeout; run is still available in the Airflow UI")
+            raise SystemExit("Timeout; inspect the run in the Airflow UI")
         time.sleep(2)
-    tasks = api(path + "/taskInstances?limit=500")["task_instances"]
-    mapped = [t for t in tasks if t["task_id"] == "process_batch"]
-    command = (
-        "import json,sys; from pathlib import Path; "
-        "from commerce_etl.files import run_directory; "
-        "p=run_directory(Path('/opt/airflow/data'),sys.argv[1])/'report.json'; "
-        "print(p.read_text() if p.exists() else '{}')"
-    )
+
+
+def container_python(code, *args):
     completed = subprocess.run(
-        ["docker", "compose", "exec", "-T", "airflow-scheduler", "python", "-c", command, run_id],
+        ["docker", "compose", "exec", "-T", "airflow-scheduler", "python", "-c", code, *args],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
     )
-    report = json.loads(completed.stdout)
+    return completed.stdout
+
+
+def collect_result(api, run_id):
+    run = api(run_path(run_id))
+    tasks = api(run_path(run_id) + "/taskInstances?limit=500")["task_instances"]
+    mapped = [t for t in tasks if t["task_id"] == "process_batch" and t["map_index"] >= 0]
+    command = (
+        "import sys; from commerce_etl.config import Settings; "
+        "from commerce_etl.files import run_directory; "
+        "p=run_directory(Settings.from_env().root,sys.argv[1])/'report.json'; "
+        "print(p.read_text() if p.exists() else '{}')"
+    )
+    report = json.loads(container_python(command, run_id))
     app_peak = overlap([(b["started_at"], b["finished_at"]) for b in report.get("batches", [])])
-    result = {
-        "kind": "v1_functional_smoke_not_benchmark",
-        "slots": args.slots,
+    return {
+        "kind": "functional_smoke_not_benchmark",
         "run_id": run_id,
-        "dataset": args.dataset,
+        "dataset": run["conf"].get("dataset", "demo"),
         "state": run["state"],
         "start_date": run["start_date"],
         "end_date": run["end_date"],
@@ -130,13 +132,54 @@ def main():
         ],
         "verification": report,
     }
-    output = args.output or ROOT / ".local" / f"{run_id}.json"
+
+
+def save_result(result, output):
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, indent=2) + "\n")
     print(f"Report: {output}")
-    print(f"Mapped tasks: {len(mapped)}, peak application overlap: {app_peak}")
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--slots", type=int, choices=(1, 2, 4), default=4)
+    p.add_argument("--dataset", default="demo")
+    p.add_argument("--timeout", type=int, default=600)
+    p.add_argument("--output", type=Path)
+    p.add_argument("--fault-point", choices=("none", "after_file", "after_commit"), default="none")
+    p.add_argument("--fault-mode", choices=("once", "always"), default="once")
+    p.add_argument("--fault-index", type=int, default=1, help="Mapped index; -1 selects every file")
+    args = p.parse_args()
+    if not -1 <= args.fault_index < 200:
+        p.error("--fault-index must be -1..199")
+    api = AirflowAPI()
+    api.ensure_idle()
+    api("/pools/orders_pool", "PATCH", {"name": "orders_pool", "slots": args.slots})
+    api("/dags/orders_etl", "PATCH", {"is_paused": False})
+    run_id = "v2_slots_" + str(args.slots) + "_" + uuid.uuid4().hex[:12]
+    api(
+        "/dags/orders_etl/dagRuns",
+        "POST",
+        {
+            "dag_run_id": run_id,
+            "conf": {
+                "dataset": args.dataset,
+                "fault_point": args.fault_point,
+                "fault_mode": args.fault_mode,
+                "fault_index": args.fault_index,
+            },
+        },
+    )
+    wait_for_run(api, run_id, args.timeout)
+    result = collect_result(api, run_id)
+    result["slots"] = args.slots
+    save_result(result, args.output or ROOT / ".local" / f"{run_id}.json")
+    report = result["verification"]
+    print(
+        f"Mapped tasks: {result['mapped_tasks']}, peak overlap: {result['peak_processing_overlap']}"
+    )
     print(f"Verified orders: {report.get('unique_orders')}, counts: {report.get('counts')}")
-    if run["state"] != "success" or report.get("status") != "success":
+    if result["state"] != "success" or report.get("status") != "success":
         raise SystemExit(1)
 
 

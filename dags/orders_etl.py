@@ -4,6 +4,7 @@ from datetime import timedelta
 
 import pendulum
 from airflow.decorators import dag, task
+from airflow.exceptions import AirflowFailException
 from airflow.models.param import Param
 from airflow.operators.python import get_current_context
 from airflow.utils.trigger_rule import TriggerRule
@@ -16,8 +17,13 @@ from airflow.utils.trigger_rule import TriggerRule
     catchup=False,
     max_active_runs=1,
     max_active_tasks=4,
-    params={"dataset": Param("demo", type="string", pattern="^[a-z0-9_-]+$")},
-    tags=["commerce", "v1", "parallel-etl"],
+    params={
+        "dataset": Param("demo", type="string", pattern="^[a-z0-9_-]+$"),
+        "fault_point": Param("none", enum=["none", "after_file", "after_commit"]),
+        "fault_mode": Param("once", enum=["once", "always"]),
+        "fault_index": Param(1, type="integer", minimum=-1, maximum=199),
+    },
+    tags=["commerce", "v2", "parallel-etl"],
     default_args={"owner": "portfolio", "retries": 1, "retry_delay": timedelta(seconds=15)},
     doc_md="File-level mapping. Change orders_pool slots to 1/2/4. See README.md.",
 )
@@ -28,16 +34,32 @@ def orders_etl():
         from commerce_etl.pipeline import discover
 
         ctx = get_current_context()
-        return discover(Settings.from_env(), ctx["run_id"], ctx["params"]["dataset"])
+        try:
+            batches = discover(Settings.from_env(), ctx["run_id"], ctx["params"]["dataset"])
+            if ctx["params"]["fault_point"] != "none" and ctx["params"]["fault_index"] >= len(
+                batches
+            ):
+                raise ValueError("fault_index_out_of_range")
+            return batches
+        except ValueError:
+            raise AirflowFailException("invalid_discovery_configuration_or_input") from None
 
     @task(
         pool="orders_pool", pool_slots=1, max_active_tis_per_dag=4, show_return_value_in_logs=False
     )
     def process_batch(batch: dict):
         from commerce_etl.config import Settings
-        from commerce_etl.pipeline import process
+        from commerce_etl.faults import FaultInjection
+        from commerce_etl.pipeline import PermanentBatchError, process
 
-        return process(Settings.from_env(), get_current_context()["run_id"], batch)
+        ctx = get_current_context()
+        params = ctx["params"]
+        selected = params["fault_index"] in (-1, ctx["ti"].map_index)
+        fault = FaultInjection(params["fault_point"], params["fault_mode"]) if selected else None
+        try:
+            return process(Settings.from_env(), ctx["run_id"], batch, fault)
+        except PermanentBatchError as exc:
+            raise AirflowFailException(str(exc)) from None
 
     @task(trigger_rule=TriggerRule.ALL_DONE, retries=0, show_return_value_in_logs=False)
     def finalize_run():

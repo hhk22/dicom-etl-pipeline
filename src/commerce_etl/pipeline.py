@@ -10,10 +10,15 @@ from psycopg2.extras import Json, execute_values
 
 from commerce_etl.config import Settings
 from commerce_etl.database import connect, save_summary, store_orders
+from commerce_etl.faults import FaultInjection
 from commerce_etl.files import atomic_write, canonical, digest, run_directory, write_json
-from commerce_etl.transform import InvalidOrder, normalize, parse_rows
+from commerce_etl.transform import InvalidFile, InvalidOrder, normalize, parse_rows
 
 TRANSFORM_VERSION = "v1"
+
+
+class PermanentBatchError(RuntimeError):
+    """An immutable input cannot be repaired by retrying the same batch."""
 
 
 def now():
@@ -71,7 +76,13 @@ def discover(settings: Settings, run_id: str, dataset: str) -> list[dict]:
     return batches
 
 
-def process(settings: Settings, run_id: str, batch: dict) -> dict:
+def process(
+    settings: Settings,
+    run_id: str,
+    batch: dict,
+    fault: FaultInjection | None = None,
+) -> dict:
+    fault = fault or FaultInjection()
     batch_id = batch["batch_id"]
     report = run_directory(settings.root, run_id) / f"{batch_id}.json"
     summary = {"batch_id": batch_id, "status": "running", "started_at": now()}
@@ -80,7 +91,7 @@ def process(settings: Settings, run_id: str, batch: dict) -> dict:
     try:
         data = (settings.root / batch["raw_path"]).read_bytes()
         if digest(data) != batch["input_hash"]:
-            raise ValueError("input_hash_mismatch")
+            raise InvalidFile("input_hash_mismatch")
         source_rows = parse_rows(batch["source"], data)
         valid, rejected = [], []
         for number, row in enumerate(source_rows, 1):
@@ -98,6 +109,7 @@ def process(settings: Settings, run_id: str, batch: dict) -> dict:
                 lock_key -= 2**64
             cur.execute("SELECT pg_advisory_xact_lock(%s)", (lock_key,))
             atomic_write(output, body)
+            fault.check(settings.root, run_id, batch_id, "after_file")
             db_start = time.monotonic()
             outcomes = store_orders(cur, valid) + rejected
             cur.execute(
@@ -133,19 +145,29 @@ def process(settings: Settings, run_id: str, batch: dict) -> dict:
                 processing_seconds=round(time.monotonic() - start, 6),
             )
             save_summary(cur, run_id, batch_id, "success", summary)
+        fault.check(settings.root, run_id, batch_id, "after_commit")
         write_json(report, summary)
         # XCom contains no rows or PII.
         return {"batch_id": batch_id, "rows": len(source_rows), "counts": counts}
     except Exception as exc:
         # A failed retry must not leave a previous success in the run report.
-        summary.update(status="failed", error_type=type(exc).__name__, finished_at=now())
+        permanent = isinstance(exc, InvalidFile)
+        summary.update(
+            status="failed",
+            error_type=type(exc).__name__,
+            retryable=not permanent,
+            finished_at=now(),
+        )
+        if permanent:
+            summary["reason"] = str(exc)  # InvalidFile contains a fixed code, never input data.
         write_json(report, summary)
         try:
             with connect(settings.dsn) as conn, conn.cursor() as cur:
                 save_summary(cur, run_id, batch_id, "failed", summary)
         except Exception:
             pass  # The local report survives an unavailable business DB.
-        raise RuntimeError(f"batch_failed:{batch_id}:{type(exc).__name__}") from None
+        error = PermanentBatchError if permanent else RuntimeError
+        raise error(f"batch_failed:{batch_id}:{type(exc).__name__}") from None
 
 
 def finalize(settings: Settings, run_id: str, task_failures: list[dict] | None = None) -> dict:
